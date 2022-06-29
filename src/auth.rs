@@ -17,6 +17,7 @@ use super::networkconfig::*;
 use super::user::*;
 use std::collections::HashMap;
 use jsonwebtoken;
+use jsonwebtoken::TokenData;
 use reqwest::Response;
 use serde_json;
 use x509_parser::prelude::*;
@@ -182,14 +183,14 @@ impl CasdoorSDK{
 	}
 
 	//remain unsolved
-	pub fn parse_jwt_token(&self, token: &str) -> Result<HashMap<String, String>, Box<dyn std::error::Error>>{
+	pub fn parse_jwt_token(&self, token: &str) -> Result<User, Box<dyn std::error::Error>>{
 		for pem in Pem::iter_from_buffer(&self.certificate) {
 			let pem = pem.expect("Reading next PEM block failed");
 			let x509 = pem.parse_x509().expect("X.509: decoding DER failed");
-			let key = x509.public_key().raw;
+			let key = x509.public_key().subject_public_key.data;
 			let key = jsonwebtoken::DecodingKey::from_rsa_der(key);
 			let validator = jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::RS256);
-			let json_info = jsonwebtoken::decode::<HashMap<String, String>>(&token, &key, &validator)?;
+			let json_info = jsonwebtoken::decode::<User>(&token, &key, &validator)?;
 			return Ok(json_info.claims);
 		}
 		Err(Box::new(X509Error::InvalidCertificate))
@@ -289,7 +290,7 @@ fn test_get_auth_link(){
 #[tokio::test]
 async fn test_oauth_token(){
 	let certificate = br#""#;
-	let code = "ed1d9ce644e271bb5476";
+	let code = "";
 	let app = CasdoorSDK::new("http://127.0.0.1:8000", 
 										 "5dfdb2b205c8d7efdf26", 
 										 "52494374aad2e2e6942e4cc307347d5b257b1598",

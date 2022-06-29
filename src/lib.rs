@@ -15,9 +15,9 @@
 #[macro_use]
 pub mod networkconfig;
 
-pub mod user;
 pub mod auth;
+pub mod user;
 
-pub use user::User;
 pub use auth::CasdoorSDK;
 pub use networkconfig::NetWorkConfig;
+pub use user::User;

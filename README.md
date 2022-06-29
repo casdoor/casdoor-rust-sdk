@@ -1,4 +1,4 @@
-# casdoor-rust-sdkcasdoor-go-sdk
+# casdoor-rust-sdk
 
 This is Casdoor's SDK for Rust, which will allow you to easily connect your application to the Casdoor authentication system without having to implement it from scratch.
 

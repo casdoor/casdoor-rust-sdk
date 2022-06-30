@@ -37,21 +37,21 @@ impl Default for NetWorkConfig {
 ///
 #[macro_export]
 macro_rules! networkconfig {
-	($redirect_uri:expr, $state:expr) => {
-		$crate::networkconfig::NetWorkConfig {
-			redirect_uri: $redirect_uri.to_string(),
-			state: $state.to_string(),
-			.. $crate::networkconfig::NetWorkConfig::default()
-		}
-	};
-	($redirect_uri:expr, $state:expr, $($p:ident = $e:expr)?, *) => {
-		$crate::networkconfig::NetWorkConfig {
-			redirect_uri: $redirect_uri.to_string(),
-			state: $state.to_string(),
-			$(
-				$p: $e.to_string(),
-			)*
-			.. $crate::networkconfig::NetWorkConfig::default()
-		}
-	}
+    ($redirect_uri:expr, $state:expr) => {
+        $crate::networkconfig::NetWorkConfig {
+            redirect_uri: $redirect_uri.to_string(),
+            state: $state.to_string(),
+            .. $crate::networkconfig::NetWorkConfig::default()
+        }
+    };
+    ($redirect_uri:expr, $state:expr, $($p:ident = $e:expr)?, *) => {
+        $crate::networkconfig::NetWorkConfig {
+            redirect_uri: $redirect_uri.to_string(),
+            state: $state.to_string(),
+            $(
+                $p: $e.to_string(),
+            )*
+            .. $crate::networkconfig::NetWorkConfig::default()
+        }
+    }
 }

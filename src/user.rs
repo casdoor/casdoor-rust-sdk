@@ -124,20 +124,20 @@ impl User {
 /// ```
 #[macro_export]
 macro_rules! user {
-	($ori_user: ident, $($p:ident = $e:expr), *) => {
-		$crate::user::User {
-			$(
-				$p: $e.to_string(),
-			)*
-			..$ori_user.clone()
-		}
-	};
-	($($p:ident = $e:expr), *) => {
-		$crate::user::User {
-			$(
-				$p: $e.to_string(),
-			)*
-			.. $crate::user::User::new()
-		}
-	}
+    ($ori_user: ident, $($p:ident = $e:expr), *) => {
+        $crate::user::User {
+            $(
+                $p: $e.to_string(),
+            )*
+            ..$ori_user.clone()
+        }
+    };
+    ($($p:ident = $e:expr), *) => {
+        $crate::user::User {
+            $(
+                $p: $e.to_string(),
+            )*
+            .. $crate::user::User::new()
+        }
+    }
 }

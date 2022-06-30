@@ -103,24 +103,24 @@ impl User {
 /// 1. based on an existing User
 ///
 /// ```
-///     #[macro_use]
-///     extern crate casdoor;
-///     use casdoor::user::*;
-///     fn main(){
-///         let user1 = User::default();
-///         let user2 = user!(user1, phone="12345678901", id_card="123456");
-///     }
+///    #[macro_use]
+///    extern crate casdoor;
+///    use casdoor::user::*;
+///    fn main(){
+///        let user1 = User::default();
+///        let user2 = user!(user1, phone="12345678901", id_card="123456");
+///    }
 ///
 /// ```
 /// 2. specify the fileds needed, leave others default
 ///
 /// ```
-///     #[macro_use]
-///     extern crate casdoor;
-///     use casdoor::user::*;
-///     fn main(){
-///         let user3 = user!(phone="12345678901", id_card="123456");
-///     }
+///    #[macro_use]
+///    extern crate casdoor;
+///    use casdoor::user::*;
+///    fn main(){
+///        let user3 = user!(phone="12345678901", id_card="123456");
+///    }
 /// ```
 #[macro_export]
 macro_rules! user {

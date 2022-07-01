@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::{collections::HashMap, vec};
+use std::{
+    collections::{BTreeMap, HashMap},
+    fmt::Display,
+    vec,
+};
 
-use jsonwebtoken::{self, TokenData};
+use jsonwebtoken;
 use reqwest::Response;
 use serde_json;
 use x509_parser::prelude::*;
@@ -152,36 +156,25 @@ impl CasdoorSDK {
         &self,
         config: &NetWorkConfig,
     ) -> Result<String, Box<dyn std::error::Error>> {
-        let url = self.front_endpoint.clone() + "/login/oauth/authorize";
-        let mut param = config.into_map();
-        param.insert("client_id".to_owned(), self.client_id.clone());
+        let mut url = self.front_endpoint.clone() + "/login/oauth/authorize";
+        let mut params = config.into_map();
+        params.insert("client_id".to_owned(), self.client_id.clone());
+        get_formed_url(&params, &mut url);
         let client = reqwest::Client::new();
-        let _res = client
-            .get(&url)
-            .form(&param)
-            .send()
-            .await?
-            .error_for_status()?;
-        let mut ret = url + "?";
-        for (key, value) in param {
-            ret.push_str(&format!("{}={}&", key, value));
-        }
-        match ret.pop() {
-            Some(ch) if ch != '&' => ret.push(ch),
-            _ => {}
-        }
-        Ok(ret)
+        let res = client.get(&url).send().await?.error_for_status()?;
+        Ok(res.url().to_string())
     }
 
     pub async fn get_oauth_token(&self, code: &str) -> Result<String, Box<dyn std::error::Error>> {
-        let url = self.endpoint.clone() + "/api/login/oauth/access_token";
-        let mut param = HashMap::new();
-        param.insert("grant_type".to_owned(), self.grant_type.clone());
-        param.insert("code".to_owned(), code.to_string());
-        param.insert("client_id".to_owned(), self.client_id.clone());
-        param.insert("client_secret".to_owned(), self.client_secret.clone());
+        let mut url = self.endpoint.clone() + "/api/login/oauth/access_token";
+        let mut params = BTreeMap::new();
+        params.insert("grant_type".to_owned(), self.grant_type.clone());
+        params.insert("code".to_owned(), code.to_string());
+        params.insert("client_id".to_owned(), self.client_id.clone());
+        params.insert("client_secret".to_owned(), self.client_secret.clone());
+        get_formed_url(&params, &mut url);
         let client = reqwest::Client::new();
-        let res = client.post(&url).form(&param).send().await?;
+        let res = client.post(&url).send().await?;
         let json: serde_json::Value = res.json().await?;
         Ok(json["access_token"].as_str().unwrap().to_string())
     }
@@ -201,13 +194,14 @@ impl CasdoorSDK {
     }
 
     pub async fn get_users(&self) -> Result<Vec<User>, Box<dyn std::error::Error>> {
-        let url = self.endpoint.clone() + "/api/get-users";
-        let mut params = HashMap::new();
+        let mut url = self.endpoint.clone() + "/api/get-users";
+        let mut params = BTreeMap::new();
         params.insert("owner".to_owned(), &self.org_name);
         params.insert("clientId".to_owned(), &self.client_id);
         params.insert("clientSecret".to_owned(), &self.client_secret);
+        get_formed_url(&params, &mut url);
         let client = reqwest::Client::new();
-        let res = client.get(&url).form(&params).send().await?;
+        let res = client.get(&url).send().await?;
         let json: serde_json::Value = res.json().await?;
         let users: Vec<User> = serde_json::from_value(json)?;
         Ok(users)
@@ -220,13 +214,15 @@ impl CasdoorSDK {
         &self,
         name: &str,
     ) -> Result<Option<User>, Box<dyn std::error::Error>> {
-        let url = self.endpoint.clone() + "/api/get-user";
-        let mut params: HashMap<String, &str> = HashMap::new();
+        let mut url = self.endpoint.clone() + "/api/get-user";
+        let user_info = format!("{}/{}", &self.org_name, name);
+        let mut params: BTreeMap<String, &str> = BTreeMap::new();
         params.insert("clientId".to_owned(), &self.client_id);
         params.insert("clientSecret".to_owned(), &self.client_secret);
-        params.insert("id".to_owned(), name);
+        params.insert("id".to_owned(), &user_info);
+        get_formed_url(&params, &mut url);
         let client = reqwest::Client::new();
-        let res = client.get(&url).form(&params).send().await?;
+        let res = client.get(&url).send().await?;
         let json: serde_json::Value = res.json().await?;
         let user: User = serde_json::from_value(json)?;
         Ok(Some(user))
@@ -240,7 +236,7 @@ impl CasdoorSDK {
     ) -> Result<Response, Box<dyn std::error::Error>> {
         let url = self.endpoint.clone() + format!("/api/{}", action).as_str();
         user.owner = self.org_name.clone();
-        let mut params = HashMap::new();
+        let mut params = BTreeMap::new();
         let id = format!("{}/{}", user.owner, user.name);
         params.insert("id".to_owned(), &id);
         params.insert("clientId".to_owned(), &self.client_id);
@@ -278,5 +274,20 @@ impl CasdoorSDK {
 
     pub async fn delete_user(&self, user: User) -> Result<Response, Box<dyn std::error::Error>> {
         self.modify_user("delete-user", user).await
+    }
+}
+
+fn get_formed_url<T, P>(params: &BTreeMap<T, P>, url: &mut String)
+where
+    T: Display,
+    P: Display,
+{
+    url.push('?');
+    for (key, value) in params {
+        url.push_str(&format!("{}={}&", key, value));
+    }
+    match url.pop() {
+        Some(ch) if ch != '&' => url.push(ch),
+        _ => {}
     }
 }

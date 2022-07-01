@@ -77,11 +77,12 @@ jobs:
           command: test
           args: --doc 
 
-      - name: Clippy warnings
+      - name: Clippy errors
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: -- -D warnings
+          # don't use strict mode
+          # args: -- -D warnings
 
       - name: Cargo Fmt Check
         uses: actions-rs/cargo@v1

@@ -17,7 +17,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 ///the User struct, the same as that from Go SDK
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
     //is all the pub needed here? will there be geeker way to do this?
@@ -58,6 +58,7 @@ pub struct User {
     pub is_global_admin: bool,
     pub is_forbidden: bool,
     pub is_deleted: bool,
+    pub email_verified: bool,
     pub signup_application: String,
     pub hash: String,
     pub pre_hash: String,
@@ -108,7 +109,7 @@ impl User {
 ///    use casdoor::user::*;
 ///    fn main(){
 ///        let user1 = User::default();
-///        let user2 = user!(user1, phone="12345678901", id_card="123456");
+///        let user2 = user!(user1, phone="12345678901".to_owned(), id_card="123456".to_owned());
 ///    }
 ///
 /// ```
@@ -119,7 +120,7 @@ impl User {
 ///    extern crate casdoor;
 ///    use casdoor::user::*;
 ///    fn main(){
-///        let user3 = user!(phone="12345678901", id_card="123456");
+///        let user3 = user!(phone="12345678901".to_owned(), id_card="123456".to_owned());
 ///    }
 /// ```
 #[macro_export]
@@ -127,7 +128,7 @@ macro_rules! user {
     ($ori_user: ident, $($p:ident = $e:expr), *) => {
         $crate::user::User {
             $(
-                $p: $e.to_string(),
+                $p: $e,
             )*
             ..$ori_user.clone()
         }
@@ -135,7 +136,7 @@ macro_rules! user {
     ($($p:ident = $e:expr), *) => {
         $crate::user::User {
             $(
-                $p: $e.to_string(),
+                $p: $e,
             )*
             .. $crate::user::User::new()
         }

@@ -188,3 +188,36 @@ async fn test_get_user_by_name() {
         }
     }
 }
+
+#[tokio::test]
+async fn test_modify_user() {
+    let certificate = br#""#;
+    let app = CasdoorSDK::new(
+        "http://127.0.0.1:8000",
+        "5dfdb2b205c8d7efdf26",
+        "52494374aad2e2e6942e4cc307347d5b257b1598",
+        Box::new(certificate.to_owned()),
+        "testsdk",
+        Some("http://127.0.0.1:7001"),
+        None,
+        None,
+    );
+    let user = app.get_user_by_name("tmp").await.unwrap();
+    match user {
+        Some(user) => {
+            println!("{:?}", user);
+        }
+        None => {
+            println!("no such user!");
+        }
+    }
+    let mut user_now = user!(name="tmp".to_owned());
+    let res = app.add_user(&mut user_now).await.unwrap();
+    assert_eq!(http::StatusCode::OK, res.status());
+    let user_get = app.get_user_by_name("tmp").await.unwrap().unwrap();
+    assert_eq!(user_now.name, user_get.name);
+    let res = app.delete_user(&mut user_now).await.unwrap();
+    assert_eq!(http::StatusCode::OK, res.status());
+    let user_now = app.get_user_by_name("tmp").await.unwrap();
+    assert_eq!(user_now, None);
+}

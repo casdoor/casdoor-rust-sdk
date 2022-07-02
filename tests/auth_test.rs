@@ -211,7 +211,7 @@ async fn test_modify_user() {
             println!("no such user!");
         }
     }
-    let mut user_now = user!(name="tmp".to_owned());
+    let mut user_now = user!(name = "tmp".to_owned());
     let res = app.add_user(&mut user_now).await.unwrap();
     assert_eq!(http::StatusCode::OK, res.status());
     let user_get = app.get_user_by_name("tmp").await.unwrap().unwrap();

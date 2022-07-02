@@ -12,11 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::{
-    collections::{BTreeMap, HashMap},
-    fmt::Display,
-    vec,
-};
+use std::{collections::BTreeMap, fmt::Display, vec};
 
 use jsonwebtoken;
 use reqwest::Response;
@@ -42,6 +38,7 @@ use super::{networkconfig::*, user::*};
 /// let app = newsdk!(endpoint, client_id, client_secret, certificate, org_name);
 /// ```
 ///
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct CasdoorSDK {
     endpoint: String,
@@ -209,8 +206,24 @@ impl CasdoorSDK {
     }
 
     /// get user by name
-    /// warning: this is unstable,
-    // TODO: implement Deserialize manually for User, making it safer
+    ///
+    /// return Ok(Some(User)) if user name is valid
+    ///
+    /// return Ok(None) if user name is invalid
+    ///
+    /// return Err(Error) if something wrong happened
+    ///
+    ///```no run
+    /// let user = app.get_user_by_name("tmp").await.unwrap();
+    /// match user {
+    ///     Some(user) => {
+    ///        println!("{:?}", user);
+    ///     }
+    ///   None => {
+    ///        println!("no such user!");
+    ///    }
+    /// }
+    /// ```
     pub async fn get_user_by_name(
         &self,
         name: &str,
@@ -224,28 +237,35 @@ impl CasdoorSDK {
         get_formed_url(&params, &mut url);
         let client = reqwest::Client::new();
         let res = client.get(&url).send().await?;
-        let json: serde_json::Value = res.json().await?;
-        let user: User = serde_json::from_value(json)?;
-        Ok(Some(user))
+        let json = res.json::<serde_json::Value>().await?;
+        match json {
+            serde_json::Value::Null => {
+                return Ok(None);
+            }
+            _ => {
+                let user = serde_json::from_value::<User>(json)?;
+                return Ok(Some(user));
+            }
+        }
     }
 
     //general function used by add user, update user and delete user
     async fn modify_user(
         &self,
         action: &str,
-        mut user: User,
+        user: &mut User,
     ) -> Result<Response, Box<dyn std::error::Error>> {
-        let url = self.endpoint.clone() + format!("/api/{}", action).as_str();
+        let mut url = self.endpoint.clone() + format!("/api/{}", action).as_str();
         user.owner = self.org_name.clone();
         let mut params = BTreeMap::new();
         let id = format!("{}/{}", user.owner, user.name);
         params.insert("id".to_owned(), &id);
         params.insert("clientId".to_owned(), &self.client_id);
         params.insert("clientSecret".to_owned(), &self.client_secret);
+        get_formed_url(&params, &mut url);
         let client = reqwest::Client::new();
         let res = client
             .post(&url)
-            .form(&params)
             .body(serde_json::to_string(&user).unwrap())
             .send()
             .await?;
@@ -265,15 +285,21 @@ impl CasdoorSDK {
     /// let user = user!(name = "Bob")
     /// let res = sdk.add_user(user).await?;
     /// ```
-    pub async fn add_user(&self, user: User) -> Result<Response, Box<dyn std::error::Error>> {
+    pub async fn add_user(&self, user: &mut User) -> Result<Response, Box<dyn std::error::Error>> {
         self.modify_user("add-user", user).await
     }
 
-    pub async fn update_user(&self, user: User) -> Result<Response, Box<dyn std::error::Error>> {
+    pub async fn update_user(
+        &self,
+        user: &mut User,
+    ) -> Result<Response, Box<dyn std::error::Error>> {
         self.modify_user("update-user", user).await
     }
 
-    pub async fn delete_user(&self, user: User) -> Result<Response, Box<dyn std::error::Error>> {
+    pub async fn delete_user(
+        &self,
+        user: &mut User,
+    ) -> Result<Response, Box<dyn std::error::Error>> {
         self.modify_user("delete-user", user).await
     }
 }

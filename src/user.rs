@@ -105,8 +105,8 @@ impl User {
 ///
 /// ```
 ///    #[macro_use]
-///    extern crate casdoor;
-///    use casdoor::user::*;
+///    extern crate casdoor_rust_sdk;
+///    use casdoor_rust_sdk::user::*;
 ///    fn main(){
 ///        let user1 = User::default();
 ///        let user2 = user!(user1, phone="12345678901".to_owned(), id_card="123456".to_owned());
@@ -117,8 +117,8 @@ impl User {
 ///
 /// ```
 ///    #[macro_use]
-///    extern crate casdoor;
-///    use casdoor::user::*;
+///    extern crate casdoor_rust_sdk;
+///    use casdoor_rust_sdk::user::*;
 ///    fn main(){
 ///        let user3 = user!(phone="12345678901".to_owned(), id_card="123456".to_owned());
 ///    }

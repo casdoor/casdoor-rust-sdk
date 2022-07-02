@@ -1,4 +1,4 @@
-use casdoor::{networkconfig, user, CasdoorSDK};
+use casdoor_rust_sdk::{networkconfig, user, CasdoorSDK};
 
 #[test]
 fn test_get_auth_link() {

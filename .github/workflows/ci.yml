@@ -12,8 +12,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
-        rust: [nightly, beta, stable]
+        os: [ubuntu-latest, windows-latest]
+        rust: [beta, stable]
 
     steps:
       - name: Checkout Repository
@@ -34,13 +34,6 @@ jobs:
           target: wasm32-unknown-unknown
           override: true
      
-      # Work around https://github.com/actions/cache/issues/403 by using GNU tar
-      # instead of BSD tar.
-      - name: Install GNU tar
-        if: matrix.os == 'macOS-latest'
-        run: |
-          brew install gnu-tar
-          echo PATH="/usr/local/opt/gnu-tar/libexec/gnubin:$PATH" >> $GITHUB_ENV
       - name: Cache cargo registry
         uses: actions/cache@v1
         with:

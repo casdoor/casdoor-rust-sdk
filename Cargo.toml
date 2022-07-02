@@ -7,7 +7,7 @@ description = "Rust client SDK for Casdoor"
 repository = "https://github.com/casdoor/casdoor-rust-sdk"
 readme = "README.md"
 homepage = "https://casdoor.org"
-keywords = ["oauth", "jwt", "authentication", "iam", "auth", "sso", "oidc", "authn", "casdoor"]
+keywords = ["iam", "auth", "sso", "oidc", "casdoor"]
 
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

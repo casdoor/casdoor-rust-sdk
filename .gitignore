@@ -38,3 +38,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+# node
+node_modules
+package-lock.json
+package.json

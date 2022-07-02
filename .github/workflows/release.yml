@@ -2,13 +2,12 @@ name: Auto Release
 
 on:
   push:
-    # Sequence of patterns matched against refs/tags
-    tags:
-      - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
+    branches:
+      - master
 
 jobs:
   release:
-    name: Auto Release by Tags
+    name: Auto Release
     runs-on: ubuntu-18.04
 
     steps:
@@ -22,6 +21,14 @@ jobs:
           toolchain: stable
           default: true
 
+      - name: Run semantic-release
+        if: github.repository == 'casdoor/casdoor-rust-sdk' && github.event_name == 'push'
+        run: |
+          npm install --save-dev semantic-release@17.2.4
+          npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Cargo Login
         uses: actions-rs/cargo@v1
         with:
@@ -31,15 +38,11 @@ jobs:
       - name: Cargo Publish
         uses: actions-rs/cargo@v1
         with:
-          command: publish
+          command: publish 
 
-      - name: GitHub Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      - name: Auto commit
+        uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
+          commit_message: 'chore: upgrade version'
+          file_path: Cargo.toml
+          commit_author: Release Action <actions@github.com>

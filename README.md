@@ -6,7 +6,7 @@ Casdoor SDK is very simple to use. We will show you the steps below.
 
 ```
 [dependencies]
-casdoor-rust-sdk = "0.1"
+casdoor-rust-sdk = <latest-version>
 
 //in your app
 [macro_use]

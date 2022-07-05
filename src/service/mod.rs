@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod entity;
-mod errors;
-mod service;
+mod auth;
+mod user;
 
-pub use entity::*;
-pub use service::*;
+pub use auth::AuthService;
+pub use user::UserService;

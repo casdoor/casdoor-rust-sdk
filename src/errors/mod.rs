@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod entity;
-mod errors;
-mod service;
+#[allow(dead_code)]
+pub enum CasdoorError {
+    // TODO(qianxi): use `anyhow` and `thiserror` to handle error elegantly.
+}
 
-pub use entity::*;
-pub use service::*;
+#[allow(dead_code)]
+pub type Result<T> = std::result::Result<T, CasdoorError>;

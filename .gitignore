@@ -42,3 +42,7 @@ Temporary Items
 node_modules
 package-lock.json
 package.json
+
+.vscode
+# test file
+conf.toml

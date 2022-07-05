@@ -1,223 +1,74 @@
-use casdoor_rust_sdk::{networkconfig, user, CasdoorSDK};
+// Copyright 2021 The Casdoor Authors. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
+use casdoor_rust_sdk::{AuthService, CasdoorConfig};
+
+fn abs_path(path: &str) -> Result<String, Box<dyn std::error::Error>> {
+    let absolute_path = std::env::current_dir()?.join("tests").join(path);
+    Ok(absolute_path.to_str().unwrap().to_string())
+}
+
+#[tokio::main]
 #[test]
-fn test_get_auth_link() {
-    let app = CasdoorSDK::new(
-        "http://127.0.0.1:8000",
-        "5dfdb2b205c8d7efdf26",
-        "52494374aad2e2e6942e4cc307347d5b257b1598",
-        Box::new([0]),
-        "testsdk",
-        Some("http://127.0.0.1:7001"),
-        None,
-        None,
-    );
-    let config = networkconfig!("http://localhost:9000/callback", "testsdk_a1");
-    let url = app.get_auth_link(&config).unwrap();
-    assert_eq!(
-        url,
-        "http://127.0.0.1:7001/login/oauth/authorize?client_id=5dfdb2b205c8d7efdf26&redirect_uri=http://localhost:9000/callback&response_type=code&scope=read&state=testsdk_a1"
-    )
+async fn test_get_signin_url() {
+    let conf = CasdoorConfig::from_toml(abs_path("./conf.toml").unwrap().as_str()).unwrap();
+    let auth_src = AuthService::new(&conf);
+
+    let url = auth_src.get_user_profile_url("admin".to_string(), None);
+    assert!(!url.is_empty());
 }
 
-//something wrong with this
-#[tokio::test]
-async fn test_oauth_token() {
-    let certificate = br#""#;
-    let code = "";
-    let app = CasdoorSDK::new(
-        "http://127.0.0.1:8000",
-        "5dfdb2b205c8d7efdf26",
-        "52494374aad2e2e6942e4cc307347d5b257b1598",
-        Box::new(certificate.to_owned()),
-        "testsdk",
-        Some("http://127.0.0.1:7001"),
-        None,
-        None,
-    );
-    let access_key = app.get_oauth_token(code).await.unwrap();
-    println!("{}", access_key);
-    let claim = match app.parse_jwt_token(&access_key) {
-        Ok(x) => x,
-        Err(err) => {
-            println!("{:?}", err);
-            panic!();
-        }
-    };
-    println!("{:?}", claim);
+#[tokio::main]
+#[test]
+async fn test_get_signup_url() {
+    let conf = CasdoorConfig::from_toml(abs_path("./conf.toml").unwrap().as_str()).unwrap();
+    let auth_src = AuthService::new(&conf);
+
+    let url = auth_src.get_signup_url_enable_password();
+    assert!(!url.is_empty());
 }
 
-#[tokio::test]
-async fn test_jwt() {
-    let access_key = r#""#;
-    let certificate = br#""#;
-    let app = CasdoorSDK::new(
-        "http://127.0.0.1:8000",
-        "5dfdb2b205c8d7efdf26",
-        "52494374aad2e2e6942e4cc307347d5b257b1598",
-        Box::new(certificate.to_owned()),
-        "testsdk",
-        Some("http://127.0.0.1:7001"),
-        None,
-        None,
-    );
-    let user_ans = user!(
-        owner = "testsdk".to_owned(),
-        name = "sunyh".to_owned(),
-        created_time = "2022-06-26T21:08:18+08:00".to_owned(),
-        id = "8a580f76-c8a8-4248-9651-a068a32d2b77".to_owned(),
-        r#type = "normal-user".to_owned(),
-        display_name = "New User - qew3fb".to_owned(),
-        avatar = "https://casbin.org/img/casbin.svg".to_owned(),
-        email = "leavelet0@gmail.com".to_owned(),
-        email_verified = false,
-        phone = "24107502942".to_owned(),
-        affiliation = "Example Inc.".to_owned(),
-        region = "CN".to_owned(),
-        score = 0,
-        karma = 0,
-        ranking = 2,
-        is_default_avatar = false,
-        is_online = false,
-        is_admin = true,
-        is_global_admin = false,
-        is_forbidden = false,
-        is_deleted = false,
-        signup_application = "app-built-in".to_owned(),
-        tag = "staff".to_owned()
-    );
-    let claim = match app.parse_jwt_token(&access_key) {
-        Ok(x) => x,
-        Err(err) => {
-            println!("{:?}", err);
-            panic!();
-        }
-    };
-    assert_eq!(claim, user_ans);
+#[tokio::main]
+#[test]
+async fn test_get_user_profile_url() {
+    let conf = CasdoorConfig::from_toml(abs_path("./conf.toml").unwrap().as_str()).unwrap();
+    let auth_src = AuthService::new(&conf);
+
+    let url = auth_src.get_user_profile_url("admin".to_string(), None);
+    assert!(!url.is_empty());
 }
 
-#[tokio::test]
-async fn test_get_users() {
-    let certificate = br#""#;
-    let app = CasdoorSDK::new(
-        "http://127.0.0.1:8000",
-        "5dfdb2b205c8d7efdf26",
-        "52494374aad2e2e6942e4cc307347d5b257b1598",
-        Box::new(certificate.to_owned()),
-        "testsdk",
-        Some("http://127.0.0.1:7001"),
-        None,
-        None,
-    );
-    let x = app.get_users().await.unwrap();
-    let user_ans = user!(
-        owner = "testsdk".to_owned(),
-        name = "sunyh".to_owned(),
-        created_time = "2022-06-26T21:08:18+08:00".to_owned(),
-        id = "8a580f76-c8a8-4248-9651-a068a32d2b77".to_owned(),
-        r#type = "normal-user".to_owned(),
-        display_name = "New User - qew3fb".to_owned(),
-        avatar = "https://casbin.org/img/casbin.svg".to_owned(),
-        email = "leavelet0@gmail.com".to_owned(),
-        email_verified = false,
-        phone = "24107502942".to_owned(),
-        affiliation = "Example Inc.".to_owned(),
-        region = "CN".to_owned(),
-        score = 0,
-        karma = 0,
-        ranking = 2,
-        is_default_avatar = false,
-        is_online = false,
-        is_admin = true,
-        is_global_admin = false,
-        is_forbidden = false,
-        is_deleted = false,
-        password = "***".to_owned(),
-        signup_application = "app-built-in".to_owned(),
-        tag = "staff".to_owned()
-    );
-    assert_eq!(x[0], user_ans);
+#[tokio::main]
+#[test]
+async fn test_get_my_profile_url() {
+    let conf = CasdoorConfig::from_toml(abs_path("./conf.toml").unwrap().as_str()).unwrap();
+    let auth_src = AuthService::new(&conf);
+
+    let url = auth_src.get_my_profile_url(None);
+    assert!(!url.is_empty());
 }
 
-#[tokio::test]
-async fn test_get_user_by_name() {
-    let certificate = br#""#;
-    let app = CasdoorSDK::new(
-        "http://127.0.0.1:8000",
-        "5dfdb2b205c8d7efdf26",
-        "52494374aad2e2e6942e4cc307347d5b257b1598",
-        Box::new(certificate.to_owned()),
-        "testsdk",
-        Some("http://127.0.0.1:7001"),
-        None,
-        None,
-    );
-    let user = app.get_user_by_name("sunyh").await.unwrap();
-    let user_ans = user!(
-        owner = "testsdk".to_owned(),
-        name = "sunyh".to_owned(),
-        created_time = "2022-06-26T21:08:18+08:00".to_owned(),
-        id = "8a580f76-c8a8-4248-9651-a068a32d2b77".to_owned(),
-        r#type = "normal-user".to_owned(),
-        display_name = "New User - qew3fb".to_owned(),
-        avatar = "https://casbin.org/img/casbin.svg".to_owned(),
-        email = "leavelet0@gmail.com".to_owned(),
-        email_verified = false,
-        phone = "24107502942".to_owned(),
-        affiliation = "Example Inc.".to_owned(),
-        region = "CN".to_owned(),
-        score = 0,
-        karma = 0,
-        ranking = 2,
-        is_default_avatar = false,
-        is_online = false,
-        is_admin = true,
-        is_global_admin = false,
-        is_forbidden = false,
-        is_deleted = false,
-        password = "***".to_owned(),
-        signup_application = "app-built-in".to_owned(),
-        tag = "staff".to_owned()
-    );
-    match user {
-        Some(user) => {
-            assert_eq!(user, user_ans);
-        }
-        _ => {
-            panic!("no such user!");
-        }
-    }
-}
+#[tokio::main]
+#[test]
+async fn test_get_and_parse_auth_tokens() {
+    let conf = CasdoorConfig::from_toml(abs_path("./conf.toml").unwrap().as_str()).unwrap();
+    let auth_src = AuthService::new(&conf);
 
-#[tokio::test]
-async fn test_modify_user() {
-    let certificate = br#""#;
-    let app = CasdoorSDK::new(
-        "http://127.0.0.1:8000",
-        "5dfdb2b205c8d7efdf26",
-        "52494374aad2e2e6942e4cc307347d5b257b1598",
-        Box::new(certificate.to_owned()),
-        "testsdk",
-        Some("http://127.0.0.1:7001"),
-        None,
-        None,
-    );
-    let user = app.get_user_by_name("tmp").await.unwrap();
-    match user {
-        Some(user) => {
-            println!("{:?}", user);
-        }
-        None => {
-            println!("no such user!");
-        }
-    }
-    let mut user_now = user!(name = "tmp".to_owned());
-    let res = app.add_user(&mut user_now).await.unwrap();
-    assert_eq!(http::StatusCode::OK, res.status());
-    let user_get = app.get_user_by_name("tmp").await.unwrap().unwrap();
-    assert_eq!(user_now.name, user_get.name);
-    let res = app.delete_user(&mut user_now).await.unwrap();
-    assert_eq!(http::StatusCode::OK, res.status());
-    let user_now = app.get_user_by_name("tmp").await.unwrap();
-    assert_eq!(user_now, None);
+    let token = auth_src
+        .get_auth_token("71b645e73381caeb2c66".to_string())
+        .unwrap();
+
+    let user = auth_src.parse_jwt_token(token).unwrap();
+    println!("{:?}", user);
 }

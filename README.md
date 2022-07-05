@@ -32,7 +32,7 @@ Initialization requires 6 parameters, which are all string type:
 // init from params.
 let app = CasdoorConfig::new(endpoint, client_id, client_secret, certificate, org_name);
 
-// init from toml file, file_path should be absolute path. (recommand)
+// init from toml file, file_path should be absolute path. (recommend)
 let conf = CasdoorConfig::from_toml(file_path).unwrap().as_str()).unwrap();
 ```
 

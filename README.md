@@ -43,11 +43,11 @@ Now provide two services: `CasdoorUserService`, `CasdoorAuthService`
 You can create them like:
 
 ```rust
- let user_service = UserService::new(&conf);
- let auth_src = AuthService::new(&conf);
+let user_service = UserService::new(&conf);
+let auth_src = AuthService::new(&conf);
 ```
 
-## Step3. Interact with the users
+## Step3. Interact with the sdk services
 
 The SDK support basic operations.
 

@@ -41,7 +41,7 @@ impl CasdoorConfig {
             endpoint,
             client_id,
             client_secret,
-            jwt_pub_key,
+            jwt_pub_key: Self::replace_cert_to_pub_key(jwt_pub_key),
             org_name,
             app_name,
         }

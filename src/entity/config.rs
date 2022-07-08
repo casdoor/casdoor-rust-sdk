@@ -55,6 +55,15 @@ impl CasdoorConfig {
         let mut content = String::new();
         file.read_to_string(&mut content)?;
 
-        Ok(toml::from_str(&content)?)
+        let mut conf: CasdoorConfig = toml::from_str(&content)?;
+
+        // need to convert the certificate to pem format
+        conf.jwt_pub_key = Self::replace_cert_to_pub_key(conf.jwt_pub_key);
+
+        Ok(conf)
+    }
+
+    fn replace_cert_to_pub_key(jwt_pub_key: String) -> String {
+        jwt_pub_key.replace("CERTIFICATE", "PUBLIC KEY")
     }
 }

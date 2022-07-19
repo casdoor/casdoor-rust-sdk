@@ -24,7 +24,7 @@ Initialization requires 6 parameters, which are all string type:
 | endpoint        | Yes  | Casdoor Server Url, such as `http://localhost:8000` |
 | client_id       | Yes  | Client ID for the Casdoor application               |
 | client_secret   | Yes  | Client secret for the Casdoor application           |
-| jwt_pub_key     | Yes  | The public key for the Casdoor application's cert   |
+| certificate     | Yes  | x509 certificate content of Application.cert        |
 | org_name        | Yes  | The name for the Casdoor organization               |
 | app_name        | No   | The name for the Casdoor application                |
 

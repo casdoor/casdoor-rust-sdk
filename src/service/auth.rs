@@ -54,7 +54,7 @@ impl<'a> AuthService<'a> {
     ) -> Result<CasdoorUser, Box<dyn std::error::Error>> {
         let res = jsonwebtoken::decode::<CasdoorUser>(
             &token,
-            &DecodingKey::from_rsa_pem(self.config.jwt_pub_key.as_bytes())?,
+            &DecodingKey::from_rsa_pem(self.config.certificate.as_bytes())?,
             &Validation::new(Algorithm::RS256),
         )?;
 

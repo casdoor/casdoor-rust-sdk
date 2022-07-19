@@ -21,7 +21,7 @@ pub struct CasdoorConfig {
     pub(crate) endpoint: String,
     pub(crate) client_id: String,
     pub(crate) client_secret: String,
-    pub(crate) jwt_pub_key: String,
+    pub(crate) certificate: String,
     pub(crate) org_name: String,
     pub(crate) app_name: Option<String>,
 }
@@ -33,7 +33,7 @@ impl CasdoorConfig {
         endpoint: String,
         client_id: String,
         client_secret: String,
-        jwt_pub_key: String,
+        certificate: String,
         org_name: String,
         app_name: Option<String>,
     ) -> Self {
@@ -41,7 +41,7 @@ impl CasdoorConfig {
             endpoint,
             client_id,
             client_secret,
-            jwt_pub_key: Self::replace_cert_to_pub_key(jwt_pub_key),
+            certificate: Self::replace_cert_to_pub_key(certificate),
             org_name,
             app_name,
         }
@@ -58,12 +58,12 @@ impl CasdoorConfig {
         let mut conf: CasdoorConfig = toml::from_str(&content)?;
 
         // need to convert the certificate to pem format
-        conf.jwt_pub_key = Self::replace_cert_to_pub_key(conf.jwt_pub_key);
+        conf.certificate = Self::replace_cert_to_pub_key(conf.certificate);
 
         Ok(conf)
     }
 
-    fn replace_cert_to_pub_key(jwt_pub_key: String) -> String {
-        jwt_pub_key.replace("CERTIFICATE", "PUBLIC KEY")
+    fn replace_cert_to_pub_key(certificate: String) -> String {
+        certificate.replace("CERTIFICATE", "PUBLIC KEY")
     }
 }

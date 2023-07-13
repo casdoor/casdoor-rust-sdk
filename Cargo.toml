@@ -23,6 +23,7 @@ urlencoding = "2.1.0"
 oauth2 = "4.1"
 toml = "0.5.9"
 serde_derive = "1.0"
+windows-targets = "0.48.0"
 
 
 [dev-dependencies]

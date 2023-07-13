@@ -43,6 +43,9 @@ node_modules
 package-lock.json
 package.json
 
-.vscode
+.idea/
+*.iml
+.vscode/
+
 # test file
 conf.toml

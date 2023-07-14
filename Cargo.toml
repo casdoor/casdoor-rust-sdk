@@ -40,4 +40,4 @@ iron = "0.6.1"
 router = "0.6.0"
 urlencoding = "2.1.0"
 url = "2.2.2"
-hyper = {version = "0.14.19", features = ["server"]}
+hyper = {version = "0.14.26", features = ["server"]}

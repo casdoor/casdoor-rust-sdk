@@ -16,7 +16,8 @@ use crate::entity::{CasdoorConfig, CasdoorUser};
 
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
 use oauth2::basic::BasicClient;
-use oauth2::reqwest::http_client;
+use oauth2::reqwest;
+
 use oauth2::{AuthUrl, AuthorizationCode, ClientId, ClientSecret, TokenResponse, TokenUrl};
 
 pub struct AuthService<'a> {
@@ -29,7 +30,7 @@ impl<'a> AuthService<'a> {
         Self { config }
     }
 
-    pub fn get_auth_token(&self, code: String) -> Result<String, Box<dyn std::error::Error>> {
+    pub async fn get_auth_token(&self, code: String) -> Result<String, Box<dyn std::error::Error>> {
         let client_id = ClientId::new(self.config.client_id.clone());
         let client_secret = ClientSecret::new(self.config.client_secret.clone());
         let auth_url = AuthUrl::new(format!(
@@ -42,8 +43,16 @@ impl<'a> AuthService<'a> {
         ))?;
         let code = AuthorizationCode::new(code);
 
-        let client = BasicClient::new(client_id, Some(client_secret), auth_url, Some(token_url));
-        let token_res = client.exchange_code(code).request(http_client)?;
+        let client = BasicClient::new(client_id)
+            .set_client_secret(client_secret)
+            .set_auth_uri(auth_url)
+            .set_token_uri(token_url);
+
+        let http_client = reqwest::ClientBuilder::new().build()?;
+        let token_res = client
+            .exchange_code(code)
+            .request_async(&http_client)
+            .await?;
 
         Ok(token_res.access_token().secret().to_string())
     }
@@ -64,7 +73,7 @@ impl<'a> AuthService<'a> {
     pub fn get_signin_url(&self, redirect_url: String) -> String {
         let scope = "read";
         let state = self.config.app_name.clone().unwrap_or_default();
-        format!("{}/login/oauth/authorize?client_id={}&response_type=code&redirect_uri={}&scope={}&state={}", 
+        format!("{}/login/oauth/authorize?client_id={}&response_type=code&redirect_uri={}&scope={}&state={}",
             self.config.endpoint,
             self.config.client_id,
             urlencoding::encode(&redirect_url).into_owned(),

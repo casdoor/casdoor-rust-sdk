@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use serde_derive::Deserialize;
+use serde::Deserialize;
 use std::{fs::File, io::Read};
 
 /// CasdoorConfig is the core configuration.

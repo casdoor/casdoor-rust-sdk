@@ -16,7 +16,7 @@ keywords = ["iam", "auth", "sso", "oidc", "casdoor"]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 reqwest = { version = "0.13", features = ["json"] }
-jsonwebtoken = "8"
+jsonwebtoken = { version = "10.2", features = ["rust_crypto"] }
 http = "1.4"
 urlencoding = "2.1.3"
 oauth2 = "5.0"

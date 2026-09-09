@@ -62,7 +62,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --lib
+          args: --lib --tests
 
       - name: Cargo Test For Doc
         uses: actions-rs/cargo@v1
@@ -74,7 +74,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: -- -D warnings
+          args: --all-targets -- -D warnings
 
       - name: Cargo Fmt Check
         uses: actions-rs/cargo@v1

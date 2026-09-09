@@ -1,4 +1,4 @@
-// Copyright 2021 The Casdoor Authors. All Rights Reserved.
+// Copyright 2026 The Casdoor Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,103 +12,66 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use casdoor_rust_sdk::{CasdoorConfig, CasdoorUser, UserService};
+mod common;
 
-fn abs_path(path: &str) -> Result<String, Box<dyn std::error::Error>> {
-    let absolute_path = std::env::current_dir()?.join("tests").join(path);
-    Ok(absolute_path.to_str().unwrap().to_string())
+use casdoor_rust_sdk::User;
+use common::{random_name, test_client};
+
+/// The whole life cycle of a user, it needs a running Casdoor server.
+#[tokio::test]
+#[ignore = "needs a running Casdoor server"]
+async fn test_user() {
+    let client = test_client();
+    let name = random_name("User");
+
+    // Add a new object.
+    let user = User {
+        owner: client.config.organization_name.clone(),
+        name: name.clone(),
+        display_name: name.clone(),
+        ..Default::default()
+    };
+    assert!(client.add_user(&user).await.unwrap(), "failed to add user");
+
+    // Get all the objects, check if our added object is inside the list.
+    let users = client.get_users().await.unwrap();
+    assert!(users.iter().any(|user| user.name == name));
+
+    // Get the object.
+    let mut user = client.get_user(&name).await.unwrap().unwrap();
+    assert_eq!(user.name, name);
+
+    // Update the object.
+    let updated_display_name = "Updated Display Name";
+    user.display_name = updated_display_name.to_string();
+    assert!(client.update_user(&user).await.unwrap());
+
+    // Validate the update.
+    let user = client.get_user(&name).await.unwrap().unwrap();
+    assert_eq!(user.display_name, updated_display_name);
+
+    // Delete the object.
+    assert!(client.delete_user(&user).await.unwrap());
+
+    // Validate the deletion.
+    assert!(client.get_user(&name).await.unwrap().is_none());
 }
 
-#[tokio::main]
-#[test]
-async fn test_get_users() {
-    let conf = CasdoorConfig::from_toml(abs_path("./conf.toml").unwrap().as_str()).unwrap();
-    let user_service = UserService::new(&conf);
-    let users = user_service.get_users().await.unwrap();
-    assert!(!users.is_empty());
-}
-
-#[tokio::main]
-#[test]
-async fn test_get_sorted_users() {
-    let conf = CasdoorConfig::from_toml(abs_path("./conf.toml").unwrap().as_str()).unwrap();
-    let user_service = UserService::new(&conf);
-    let users = user_service
-        .get_sorted_users("name".to_string(), 1)
-        .await
-        .unwrap();
-    assert!(!users.is_empty());
-}
-
-#[tokio::main]
-#[test]
+#[tokio::test]
+#[ignore = "needs a running Casdoor server"]
 async fn test_get_user_count() {
-    let conf = CasdoorConfig::from_toml(abs_path("./conf.toml").unwrap().as_str()).unwrap();
-    let user_service = UserService::new(&conf);
-    let count = user_service.get_user_count("0".to_string()).await.unwrap();
-    assert!(count == 1);
+    let client = test_client();
+
+    let count = client.get_user_count("").await.unwrap();
+    assert!(count > 0);
 }
 
-#[tokio::main]
-#[test]
-async fn test_get_user() {
-    let conf = CasdoorConfig::from_toml(abs_path("./conf.toml").unwrap().as_str()).unwrap();
-    let user_service = UserService::new(&conf);
-    let user = user_service.get_user("admin".to_string()).await.unwrap();
-    assert!(user.owner == "built-in");
-}
+#[tokio::test]
+#[ignore = "needs a running Casdoor server"]
+async fn test_get_pagination_users() {
+    let client = test_client();
 
-#[tokio::main]
-#[test]
-async fn test_get_user_with_email() {
-    let conf = CasdoorConfig::from_toml(abs_path("./conf.toml").unwrap().as_str()).unwrap();
-    let user_service = UserService::new(&conf);
-    let user = user_service
-        .get_user_with_email("admin".to_string(), "admin@example.com".to_string())
-        .await
-        .unwrap();
-    assert!(user.email == "admin@example.com");
-}
-
-#[tokio::main]
-#[test]
-async fn test_add_user() {
-    let conf = CasdoorConfig::from_toml(abs_path("./conf.toml").unwrap().as_str()).unwrap();
-    let user_service = UserService::new(&conf);
-    let user = user_service.get_user("admin".to_string()).await.unwrap();
-
-    let new_user = CasdoorUser {
-        name: "new_user".to_string(),
-        ..user
-    };
-
-    let code = user_service.add_user(new_user).await.unwrap();
-    assert_eq!(code, 200);
-}
-
-#[tokio::main]
-#[test]
-async fn test_update_user() {
-    let conf = CasdoorConfig::from_toml(abs_path("./conf.toml").unwrap().as_str()).unwrap();
-    let user_service = UserService::new(&conf);
-    let user = user_service.get_user("new_user".to_string()).await.unwrap();
-
-    let new_user = CasdoorUser {
-        email: "change@example.com".to_string(),
-        ..user
-    };
-
-    let code = user_service.update_user(new_user).await.unwrap();
-    assert_eq!(code, 200);
-}
-
-#[tokio::main]
-#[test]
-async fn test_delete_user() {
-    let conf = CasdoorConfig::from_toml(abs_path("./conf.toml").unwrap().as_str()).unwrap();
-    let user_service = UserService::new(&conf);
-    let user = user_service.get_user("new_user".to_string()).await.unwrap();
-
-    let code = user_service.delete_user(user).await.unwrap();
-    assert_eq!(code, 200);
+    let (users, count) = client.get_pagination_users(1, 10, &[]).await.unwrap();
+    assert!(!users.is_empty());
+    assert!(count >= users.len() as i32);
 }

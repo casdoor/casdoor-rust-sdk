@@ -1,6 +1,8 @@
 [package]
 name = "casdoor-rust-sdk"
-version = "2.0.0"
+# Managed by semantic-release-cargo, the real version is set during the release,
+# see .github/workflows/release.yml.
+version = "0.0.0"
 edition = "2021"
 license = "Apache-2.0"
 description = "Rust client SDK for Casdoor"

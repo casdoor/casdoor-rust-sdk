@@ -12,45 +12,38 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        rust: [beta, stable]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        rust: [stable]
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
 
       - name: Install Rust toolchain ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain:  ${{ matrix.rust }}
+          toolchain: ${{ matrix.rust }}
           components: rustfmt, clippy
           override: true
 
-      - name: Install wasm32-unknown-unknown for ${{ matrix.rust }}
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain:  ${{ matrix.rust }}
-          target: wasm32-unknown-unknown
-          override: true
-     
       - name: Cache cargo registry
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cargo/registry
-          key: ${{ matrix.os }}-${{ matrix.rust }}-cargo-registry-${{ hashFiles('**/Cargo.toml') }}-${{ secrets.CACHE_VERSION }}
+          key: ${{ matrix.os }}-${{ matrix.rust }}-cargo-registry-${{ hashFiles('**/Cargo.toml') }}-${{ secrets.CACHE_VERSION || github.run_id }}
 
       - name: Cache cargo index
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cargo/git
-          key: ${{ matrix.os }}-${{ matrix.rust }}-cargo-index-${{ hashFiles('**/Cargo.toml') }}-${{ secrets.CACHE_VERSION }}
+          key: ${{ matrix.os }}-${{ matrix.rust }}-cargo-index-${{ hashFiles('**/Cargo.toml') }}-${{ secrets.CACHE_VERSION || github.run_id }}
 
       - name: Cache cargo build
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: target
-          key: ${{ matrix.os }}-${{ matrix.rust }}-cargo-build-target-${{ hashFiles('**/Cargo.toml') }}-${{ secrets.CACHE_VERSION }}
+          key: ${{ matrix.os }}-${{ matrix.rust }}-cargo-build-target-${{ hashFiles('**/Cargo.toml') }}-${{ secrets.CACHE_VERSION || github.run_id }}
 
       - name: Release build
         uses: actions-rs/cargo@v1
@@ -68,7 +61,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --doc 
+          args: --doc
 
       - name: Clippy warnings
         uses: actions-rs/cargo@v1

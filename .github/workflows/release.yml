@@ -1,50 +1,19 @@
 name: Auto Release
 
 on:
-  push:
-    branches:
-      - master
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
 
 jobs:
   release:
-    name: Auto Release
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          default: true
-
-      - name: Install release tool
-        uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: semantic-release-rust --version 1.0.0-alpha.8
-
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
-      - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v4
-        id: semantic
-        with:
-            semantic_version: 19.0.5
-                  @semantic-release/exec@5.0
-                  @semantic-release/git@9.0
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_TOKEN }}
-
-      - name: Auto commit
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: 'chore: bump version'
-          file_path: Cargo.toml
-          commit_author: Release Action <actions@github.com>
+    if: ${{ github.repository == 'casdoor/casdoor-rust-sdk' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' }}
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    uses: semantic-release-action/rust/.github/workflows/release-library.yml@v5
+    with:
+      disable-semantic-release-git: true
+    secrets:
+      cargo-registry-token: ${{ secrets.CARGO_TOKEN }}

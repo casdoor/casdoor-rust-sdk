@@ -74,3 +74,45 @@ jobs:
         with:
           command: fmt
           args: --all -- --check
+
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Start local Casdoor
+        run: |
+          docker run -d --name casdoor \
+            -p 8000:8000 \
+            -e driverName=sqlite \
+            -e dataSourceName='file:casdoor.db?cache=shared' \
+            -e initDataFile=/init_data.json \
+            -v "$PWD/.ci/casdoor/init_data.json:/init_data.json:ro" \
+            casbin/casdoor-all-in-one
+
+          for i in {1..60}; do
+            if curl -fsS http://localhost:8000 >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker logs casdoor
+          exit 1
+
+      - name: Run integration tests
+        run: cargo test -- --ignored
+
+      - name: Dump Casdoor logs
+        if: failure()
+        run: docker logs casdoor

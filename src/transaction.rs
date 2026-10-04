@@ -80,11 +80,14 @@ impl Client {
 
     /// Get the transactions of one user.
     pub async fn get_user_transactions(&self, user_name: &str) -> Result<Vec<Transaction>> {
+        // Casdoor has no get-user-transactions API, get-transactions filters the
+        // transactions by user.
         self.get_list(
-            "get-user-transactions",
+            "get-transactions",
             &[
                 ("owner", &self.config.organization_name),
-                ("user", user_name),
+                ("field", "user"),
+                ("value", user_name),
             ],
         )
         .await

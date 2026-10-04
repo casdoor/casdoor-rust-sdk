@@ -70,10 +70,19 @@ impl Client {
         .await
     }
 
-    /// Get one record by name.
+    /// Get one record by name, `None` if it doesn't exist. Casdoor has no API to get a
+    /// single record, so it searches the records by name. Like the other APIs that read
+    /// records, it needs the access token of an admin user, see
+    /// [`Client::with_access_token()`].
     pub async fn get_record(&self, name: &str) -> Result<Option<Record>> {
-        self.get_object("get-record", &[("id", &self.get_id(name))])
-            .await
+        let name = name.rsplit('/').next().unwrap_or(name);
+
+        // The name filter matches the records whose names contain the given name.
+        let (records, _) = self
+            .get_pagination_records(1, 100, &[("field", "name"), ("value", name)])
+            .await?;
+
+        Ok(records.into_iter().find(|record| record.name == name))
     }
 
     /// Add a record.

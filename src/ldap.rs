@@ -16,7 +16,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::client::{get_admin_id, get_owner, Client, PostBody, Response};
+use crate::client::{get_owner, Client, PostBody, Response};
 use crate::error::Result;
 use crate::serde_util::null_to_default;
 
@@ -112,12 +112,13 @@ pub struct SyncLdapUsersResponse {
 impl Client {
     /// Get all the LDAP servers.
     pub async fn get_ldaps(&self) -> Result<Vec<Ldap>> {
-        self.get_list("get-ldaps", &[("owner", "admin")]).await
+        self.get_list("get-ldaps", &[("owner", &self.config.organization_name)])
+            .await
     }
 
     /// Get one LDAP server by ID.
     pub async fn get_ldap(&self, id: &str) -> Result<Option<Ldap>> {
-        self.get_object("get-ldap", &[("id", &get_admin_id(id))])
+        self.get_object("get-ldap", &[("id", &self.get_id(id))])
             .await
     }
 
@@ -187,7 +188,7 @@ impl Client {
         columns: &[&str],
     ) -> Result<(Response, bool)> {
         let mut ldap = ldap.clone();
-        ldap.owner = get_owner(&ldap.owner, "admin");
+        ldap.owner = get_owner(&ldap.owner, &self.config.organization_name);
 
         let id = format!("{}/{}", ldap.owner, ldap.id);
         self.modify_object(action, &id, &ldap, columns).await

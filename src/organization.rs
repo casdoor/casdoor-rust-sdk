@@ -134,20 +134,14 @@ impl Client {
 
     /// Get all the organizations.
     pub async fn get_organizations(&self) -> Result<Vec<Organization>> {
-        self.get_list(
-            "get-organizations",
-            &[("owner", &self.config.organization_name)],
-        )
-        .await
+        self.get_list("get-organizations", &[("owner", "admin")])
+            .await
     }
 
     /// Get all the organizations, with only their names filled in.
     pub async fn get_organization_names(&self) -> Result<Vec<Organization>> {
-        self.get_list(
-            "get-organization-names",
-            &[("owner", &self.config.organization_name)],
-        )
-        .await
+        self.get_list("get-organization-names", &[("owner", "admin")])
+            .await
     }
 
     /// Add an organization.

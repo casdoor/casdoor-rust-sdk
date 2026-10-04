@@ -14,7 +14,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::client::{Client, PostBody};
+use crate::client::{get_owner, Client, PostBody};
 use crate::error::{CasdoorError, Result};
 
 /// Resource has the same definition as
@@ -158,6 +158,24 @@ impl Client {
             file_bytes,
         )
         .await
+    }
+
+    /// Add a resource.
+    pub async fn add_resource(&self, resource: &Resource) -> Result<bool> {
+        self.modify_resource("add-resource", resource).await
+    }
+
+    /// Update a resource.
+    pub async fn update_resource(&self, resource: &Resource) -> Result<bool> {
+        self.modify_resource("update-resource", resource).await
+    }
+
+    async fn modify_resource(&self, action: &str, resource: &Resource) -> Result<bool> {
+        let mut resource = resource.clone();
+        resource.owner = get_owner(&resource.owner, &self.config.organization_name);
+
+        let id = format!("{}/{}", resource.owner, resource.name);
+        Ok(self.modify_object(action, &id, &resource, &[]).await?.1)
     }
 
     /// Delete a resource.

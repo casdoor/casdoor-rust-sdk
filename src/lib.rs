@@ -89,6 +89,7 @@ mod token;
 mod transaction;
 mod url;
 mod user;
+mod util;
 mod webhook;
 
 pub use adapter::*;
@@ -124,6 +125,7 @@ pub use syncer::*;
 pub use token::*;
 pub use transaction::*;
 pub use user::*;
+pub use util::*;
 pub use webhook::*;
 
 /// The old name of [`AuthConfig`], kept to ease the migration from the 1.x versions.

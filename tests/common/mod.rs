@@ -20,6 +20,7 @@
 //! ```
 
 use std::env;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use casdoor_rust_sdk::Client;
@@ -37,14 +38,20 @@ pub fn test_client() -> Client {
     )
 }
 
-/// A name that no other object of the Casdoor server has.
+/// A name that no other object of the Casdoor server has. The counter keeps the names of the
+/// tests running in parallel apart, as the clock may not tick between them.
+// Each test file compiles this module on its own, and not all of them need a random name.
+#[allow(dead_code)]
 pub fn random_name(prefix: &str) -> String {
+    static COUNTER: AtomicU64 = AtomicU64::new(0);
+
     let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_nanos();
+    let count = COUNTER.fetch_add(1, Ordering::Relaxed);
 
-    format!("{prefix}_{nanos}")
+    format!("{prefix}_{nanos}_{count}")
 }
 
 fn get_env(key: &str, default_value: &str) -> String {
